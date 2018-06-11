@@ -206,7 +206,7 @@ void RunOfflineNode(const MapBuilderFactory& map_builder_factory) {
         // When a message is retrieved by GetNextMessage() further below,
         // we will have already inserted further 'kDelay' seconds worth of
         // transforms into 'tf_buffer' via this lambda.
-        [&tf_publisher, &tf_buffer](const rosbag::MessageInstance& msg) {
+        [&tf_publisher, &tf_buffer, &node](const rosbag::MessageInstance& msg) {
           if (msg.isType<tf2_msgs::TFMessage>()) {
             if (FLAGS_use_bag_transforms) {
               const auto tf_message = msg.instantiate<tf2_msgs::TFMessage>();
@@ -219,7 +219,7 @@ void RunOfflineNode(const MapBuilderFactory& map_builder_factory) {
                   // published before any data messages, so that tf lookups
                   // always work.
                   tf_buffer.setTransform(transform, "unused_authority",
-                                         msg.getTopic() == kTfStaticTopic);
+                                         node.node_handle()->resolveName(msg.getTopic()) == kTfStaticTopic);
                 } catch (const tf2::TransformException& ex) {
                   LOG(WARNING) << ex.what();
                 }
